@@ -1,0 +1,3 @@
+EXEC sp_create_indexes_customers;
+EXEC sp_create_indexes_nations;
+GO
