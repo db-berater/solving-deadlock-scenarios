@@ -22,13 +22,18 @@ GO
 /*
 	Run the extended event script: 01 - SCH_S_locks.sql to implement the
 	extended event which monitors SCH_S locks!
+	Change the session_id variable in the script to this session_id!
 
 	-- Copy the following statement in another query window
+	USE ERP_Demo;
+	GO
+
 	BEGIN TRANSACTION
 	GO
 		UPDATE	dbo.customers
 		SET		c_name = 'Uwe Ricken'
 		WHERE	c_custkey = 10
+		OPTION	(MAXDOP 1);
 */
 
 /*
@@ -44,29 +49,97 @@ SELECT	DISTINCT
 		request_type,
 		request_status,
 		blocking_session_id
-FROM	dbo.get_locking_status(75)
+FROM	dbo.get_locking_status(61)
 ORDER BY
 		request_session_id;
 GO
 
 /* The query will be blocked in READ COMMITTED isolation level */
-SELECT * FROM dbo.customers
+SELECT	[c_custkey],
+		[c_mktsegment],
+		[c_nationkey],
+		[c_name],
+		[c_address],
+		[c_phone],
+		[c_acctbal],
+		[c_comment]
+FROM	dbo.customers
 WHERE	c_custkey = 10;
 GO
 
-SELECT * FROM dbo.customers WITH (NOLOCK)
+/*
+	Let's see what read uncommitted isolation level will do.
+*/
+
+SELECT	[c_custkey],
+		[c_mktsegment],
+		[c_nationkey],
+		[c_name],
+		[c_address],
+		[c_phone],
+		[c_acctbal],
+		[c_comment]
+FROM	dbo.customers WITH (NOLOCK)
 WHERE	c_custkey = 10;
 GO
 
-SELECT * FROM dbo.customers WITH (READUNCOMMITTED)
-WHERE	c_custkey = 10;
+/*
+	Stop the recording by dropping both events for tracking the locks
+*/
+ALTER EVENT SESSION [read_uncommitted_locks] ON SERVER
+	DROP EVENT sqlserver.lock_acquired,
+	DROP EVENT sqlserver.lock_released;
+GO
+
+/* ... and read the data from the ring buffer */
+EXEC dbo.sp_read_xevent_locks
+	@xevent_name = N'read_uncommitted_locks',
+	@filter_condition = N'activity_id LIKE ''266BC1DA-3E0F-41B5-B890-A935465EDC16%''';
+GO
+
+/* Re-Implement the extended event for read uncommitted. */
+
+SELECT	[c_custkey],
+		[c_mktsegment],
+		[c_nationkey],
+		[c_name],
+		[c_address],
+		[c_phone],
+		[c_acctbal],
+		[c_comment]
+FROM	dbo.customers WITH (READUNCOMMITTED)
+WHERE	c_custkey <= 100000
+OPTION	(MAXDOP 1);
+GO
+
+/*
+	Stop the recording by dropping both events for tracking the locks
+*/
+ALTER EVENT SESSION [read_uncommitted_locks] ON SERVER
+	DROP EVENT sqlserver.lock_acquired,
+	DROP EVENT sqlserver.lock_released;
+GO
+
+/* ... and read the data from the ring buffer */
+EXEC dbo.sp_read_xevent_locks
+	@xevent_name = N'read_uncommitted_locks',
+	@filter_condition = N'activity_id LIKE ''266BC1DA-3E0F-41B5-B890-A935465EDC16%''';
 GO
 
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 GO
 
-SELECT * FROM dbo.customers
-WHERE	c_custkey = 10;
+SELECT	[c_custkey],
+		[c_mktsegment],
+		[c_nationkey],
+		[c_name],
+		[c_address],
+		[c_phone],
+		[c_acctbal],
+		[c_comment]
+FROM	dbo.customers
+WHERE	c_custkey <= 10000
+OPTION	(MAXDOP 1);
 GO
 
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
@@ -76,6 +149,6 @@ GO
 	Clean the environment
 	- drop the extended event session
 */
-IF EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = N'SCH_S_Locks')
-	DROP EVENT SESSION [SCH_S_Locks] ON SERVER 
+IF EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = N'read_uncommitted_locks')
+	DROP EVENT SESSION [read_uncommitted_locks] ON SERVER 
 GO

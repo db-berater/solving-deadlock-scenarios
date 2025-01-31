@@ -162,19 +162,15 @@ GO
 	Now we run the flip flop of record 10 in a separate transaction
 	for 5000 times in SQLQueryStress.
 
-	Load the template 01 - phantom reads.json into SQLQueryStress
-	and execute the batch.
-	When it runs come back and run the next statement
+	- Start SQLQueryStress
+	- Load the template [98 - Query Stress]/01 - phantom reads.json into SQLQueryStress
+	  and execute the batch.
+	- When it runs come back and run the next statement
 */
 DROP TABLE IF EXISTS #record_count;
 GO
 
 CREATE TABLE #record_count ([rows] BIGINT NOT NULL);
-GO
-
-UPDATE	demo.customers
-SET		c_custkey = 10
-WHERE	c_custkey = 99999;
 GO
 
 DECLARE	@rc INT = 1;

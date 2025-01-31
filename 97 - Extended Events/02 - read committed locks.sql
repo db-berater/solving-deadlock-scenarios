@@ -25,7 +25,7 @@ GO
 	session_id:		session_id to track
 */
 :SETVAR EventName			read_committed_locks
-:SETVAR	session_id			64
+:SETVAR	session_id			74
 
 PRINT N'-------------------------------------------------------------';
 PRINT N'| Installation script by db Berater GmbH                     |';
@@ -69,14 +69,15 @@ ADD EVENT sqlserver.lock_acquired
 		AND sqlserver.session_id = $(session_id)
 		AND
 		(
-			mode = 1		/* SCH_S */
-			OR mode = 2		/* SCH_M */
-			OR mode = 3		/* S */
-			OR mode = 4		/* U */
-			OR mode = 5		/* X */
-			OR mode = 6		/* IS */
-			OR mode = 7		/* IU */
-			OR mode = 8		/* X */
+			   mode = 'SCH_S'
+			OR mode = 'SCH_M'
+			OR mode = 'S'
+			OR mode = 'U'
+			OR mode = 'X'
+			OR mode = 'IS'
+			OR mode = 'IU'
+			OR mode = 'SIX'
+			OR mode = 'UIX'
 		)
 ),
 ADD EVENT sqlserver.lock_released
@@ -87,26 +88,27 @@ ADD EVENT sqlserver.lock_released
 		AND sqlserver.session_id = $(session_id)
 		AND
 		(
-			mode = 1		/* SCH_S */
-			OR mode = 2		/* SCH_M */
-			OR mode = 3		/* S */
-			OR mode = 4		/* U */
-			OR mode = 5		/* X */
-			OR mode = 6		/* IS */
-			OR mode = 7		/* IU */
-			OR mode = 8		/* X */
+			   mode = 'SCH_S'
+			OR mode = 'SCH_M'
+			OR mode = 'S'
+			OR mode = 'U'
+			OR mode = 'X'
+			OR mode = 'IS'
+			OR mode = 'IU'
+			OR mode = 'SIX'
+			OR mode = 'UIX'
 		)
 )
 ADD TARGET package0.ring_buffer (SET max_events_limit = 0, max_memory = 10240)
 WITH
 (
-	MAX_MEMORY=4096 KB,
-	EVENT_RETENTION_MODE=ALLOW_SINGLE_EVENT_LOSS,
+	MAX_MEMORY = 4096 KB,
+	EVENT_RETENTION_MODE = NO_EVENT_LOSS,
 	MAX_DISPATCH_LATENCY= 1 SECONDS,
-	MAX_EVENT_SIZE=0 KB,
-	MEMORY_PARTITION_MODE=NONE,
-	TRACK_CAUSALITY=OFF,
-	STARTUP_STATE=OFF
+	MAX_EVENT_SIZE = 0 KB,
+	MEMORY_PARTITION_MODE = NONE,
+	TRACK_CAUSALITY = ON,
+	STARTUP_STATE = OFF
 );
 GO
 

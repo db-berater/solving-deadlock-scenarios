@@ -85,6 +85,8 @@ GO
 	WHERE	c_custkey <= 10;
 	GO
 
+	/* Try to insert a new record with the value 1 - 9 (uneven!) */
+
 	SELECT	request_session_id,
 			resource_type,
 			resource_description,
