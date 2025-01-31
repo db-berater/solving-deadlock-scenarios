@@ -20,11 +20,13 @@ USE ERP_Demo;
 GO
 
 /*
-	Run the extended event script: 01 - SCH_S_locks.sql to implement the
-	extended event which monitors SCH_S locks!
+	Run the extended event script: 01 - read uncommitted locks.sql
+	to implement the extended event which monitors SCH_S locks!
 	Change the session_id variable in the script to this session_id!
 
-	-- Copy the following statement in another query window
+	-- Copy the following statement in another query window and exeute it
+	-- it will cause an X-lock on the page where customer 10 is stored.
+
 	USE ERP_Demo;
 	GO
 
@@ -34,6 +36,7 @@ GO
 		SET		c_name = 'Uwe Ricken'
 		WHERE	c_custkey = 10
 		OPTION	(MAXDOP 1);
+
 */
 
 /*
@@ -41,17 +44,30 @@ GO
     Note:   This function is part of the framework of the demo database
             https://www.db-berater.de/downloads/ERP_DEMO_2012.BAK
 */
-SELECT	DISTINCT
-		request_session_id,
+;WITH l
+AS
+(
+	SELECT	DISTINCT
+			request_session_id,
+			resource_type,
+			resource_description,
+			request_mode,
+			request_type,
+			request_status,
+			sort_order
+	FROM	dbo.get_locking_status(62)
+	WHERE	resource_description <> N'get_locking_status'
+			AND resource_associated_entity_id > 100
+)
+SELECT	request_session_id,
 		resource_type,
 		resource_description,
 		request_mode,
 		request_type,
-		request_status,
-		blocking_session_id
-FROM	dbo.get_locking_status(61)
+		request_status
+FROM	l
 ORDER BY
-		request_session_id;
+		sort_order;
 GO
 
 /* The query will be blocked in READ COMMITTED isolation level */
@@ -70,7 +86,6 @@ GO
 /*
 	Let's see what read uncommitted isolation level will do.
 */
-
 SELECT	[c_custkey],
 		[c_mktsegment],
 		[c_nationkey],
