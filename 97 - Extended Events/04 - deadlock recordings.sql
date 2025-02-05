@@ -39,10 +39,6 @@ GO
 
 RAISERROR (N'creating extended event session $(EventName)...', 0, 1) WITH NOWAIT;
 CREATE EVENT SESSION [$(EventName)] ON SERVER 
-ADD EVENT sqlserver.lock_deadlock_chain
-(
-    ACTION (sqlserver.database_name)
-),
 ADD EVENT sqlserver.xml_deadlock_report
 (
     ACTION(sqlserver.database_name)

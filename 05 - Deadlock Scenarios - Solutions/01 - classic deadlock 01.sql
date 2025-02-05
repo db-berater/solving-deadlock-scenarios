@@ -41,7 +41,7 @@ GO
 		We know that we must access an additional resource
 	*/
 	SELECT	*
-	FROM	dbo.nations WITH (HOLDLOCK)
+	FROM	dbo.nations WITH (UPDLOCK)
 	WHERE	n_nationkey = 2;
 
 	UPDATE	dbo.customers
@@ -53,8 +53,31 @@ GO
 	/*
 		What resources are locked now?
 	*/
-	SELECT	*
-	FROM	dbo.get_locking_status(@@spid);
+	;WITH l
+	AS
+	(
+		SELECT	DISTINCT
+				request_session_id,
+				resource_type,
+				resource_description,
+				request_mode,
+				request_type,
+				request_status,
+				sort_order
+		FROM	dbo.get_locking_status(NULL)
+		WHERE	resource_description <> N'get_locking_status'
+				AND resource_associated_entity_id > 100
+	)
+	SELECT	request_session_id,
+			resource_type,
+			resource_description,
+			request_mode,
+			request_type,
+			request_status
+	FROM	l
+	ORDER BY
+			request_session_id,
+			sort_order;
 	GO
 
 	/* After the second transaction has started we process with the next step */
@@ -63,8 +86,31 @@ GO
 	WHERE	n_nationkey = 2
 	OPTION	(MAXDOP 1);
 
-	SELECT	*
-	FROM	dbo.get_locking_status(@@spid);
+	;WITH l
+	AS
+	(
+		SELECT	DISTINCT
+				request_session_id,
+				resource_type,
+				resource_description,
+				request_mode,
+				request_type,
+				request_status,
+				sort_order
+		FROM	dbo.get_locking_status(@@SPID)
+		WHERE	resource_description <> N'get_locking_status'
+				AND resource_associated_entity_id > 100
+	)
+	SELECT	request_session_id,
+			resource_type,
+			resource_description,
+			request_mode,
+			request_type,
+			request_status
+	FROM	l
+	ORDER BY
+			request_session_id,
+			sort_order;
 	GO
 
 ROLLBACK TRANSACTION update_customers;

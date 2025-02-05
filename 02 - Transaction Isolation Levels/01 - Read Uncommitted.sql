@@ -38,6 +38,18 @@ GO
 		OPTION	(MAXDOP 1);
 
 */
+/* The query will be blocked in READ COMMITTED isolation level */
+SELECT	[c_custkey],
+		[c_mktsegment],
+		[c_nationkey],
+		[c_name],
+		[c_address],
+		[c_phone],
+		[c_acctbal],
+		[c_comment]
+FROM	dbo.customers
+WHERE	c_custkey = 11;
+GO
 
 /*
     Let's have a look to the obtained locks from the running spid
@@ -55,7 +67,7 @@ AS
 			request_type,
 			request_status,
 			sort_order
-	FROM	dbo.get_locking_status(62)
+	FROM	dbo.get_locking_status(NULL)
 	WHERE	resource_description <> N'get_locking_status'
 			AND resource_associated_entity_id > 100
 )
@@ -70,18 +82,7 @@ ORDER BY
 		sort_order;
 GO
 
-/* The query will be blocked in READ COMMITTED isolation level */
-SELECT	[c_custkey],
-		[c_mktsegment],
-		[c_nationkey],
-		[c_name],
-		[c_address],
-		[c_phone],
-		[c_acctbal],
-		[c_comment]
-FROM	dbo.customers
-WHERE	c_custkey = 10;
-GO
+
 
 /*
 	Let's see what read uncommitted isolation level will do.
@@ -95,7 +96,7 @@ SELECT	[c_custkey],
 		[c_acctbal],
 		[c_comment]
 FROM	dbo.customers WITH (NOLOCK)
-WHERE	c_custkey = 10;
+WHERE	c_custkey = 11;
 GO
 
 /*
@@ -108,12 +109,11 @@ GO
 
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
-	@xevent_name = N'read_uncommitted_locks',
-	@filter_condition = N'activity_id LIKE ''266BC1DA-3E0F-41B5-B890-A935465EDC16%''';
+	@xevent_name = N'read_uncommitted_locks'
+	, @filter_condition = N'activity_id LIKE ''C6C65F77-39CE-470D-ACAC-B8FA1D28D783%''';
 GO
 
 /* Re-Implement the extended event for read uncommitted. */
-
 SELECT	[c_custkey],
 		[c_mktsegment],
 		[c_nationkey],
@@ -137,8 +137,8 @@ GO
 
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
-	@xevent_name = N'read_uncommitted_locks',
-	@filter_condition = N'activity_id LIKE ''266BC1DA-3E0F-41B5-B890-A935465EDC16%''';
+	@xevent_name = N'read_uncommitted_locks'
+	, @filter_condition = N'activity_id LIKE ''1E3D81E1-4C56-49EB-BC5D-099DFE910F46%''';
 GO
 
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;

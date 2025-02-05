@@ -21,12 +21,6 @@ GO
 USE ERP_Demo;
 GO
 
-/* Temporary solution 'til it's fixed */
-CREATE PROC dbo.sp_read_xevent_locks
-AS
-	PRINT 'test'
-GO
-
 CREATE OR ALTER PROCEDURE dbo.sp_read_xevent_locks
 	@xevent_name		NVARCHAR(128),
 	@filter_condition	NVARCHAR(1024) = NULL

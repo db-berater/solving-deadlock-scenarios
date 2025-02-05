@@ -1,3 +1,21 @@
+/*
+	============================================================================
+	File:		04 - deadlock with one object only.sql
+
+	Summary:	This demo shows a deadlock with only ONE object involved.
+
+				THIS SCRIPT IS PART OF THE TRACK:
+					Session: Solving Deadlock Scenarios
+
+	Date:		January 2025
+
+	SQL Server Version: >= 2016
+	============================================================================
+*/
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
+GO
+
 USE ERP_Demo;
 GO
 

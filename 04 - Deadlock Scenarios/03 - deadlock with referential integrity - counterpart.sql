@@ -1,3 +1,18 @@
+/*
+	============================================================================
+	File:		03 - deadlock with referential integrity - counterpart.sql
+
+	Summary:	This demo script is part of the script 02... sql
+
+				THIS SCRIPT IS PART OF THE TRACK:
+					Session: Solving Deadlock Scenarios
+
+	Date:		January 2025
+
+	SQL Server Version: >= 2016
+	============================================================================
+*/
+
 BEGIN TRANSACTION
 GO
 	UPDATE	dbo.customers

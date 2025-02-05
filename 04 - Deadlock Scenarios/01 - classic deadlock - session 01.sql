@@ -1,9 +1,12 @@
 /*
 	============================================================================
-	File:		01 - classic deadlock 01.sql
+	File:		01 - classic deadlock - session 01.sql
 
 	Summary:	This demo is based on a typical scenario of different call stacks
 				from two concurrent processes accessing the same resources.
+
+				This script is for the FIRST session which gets in concurrency
+				with 01 - classic deadlock - session 02.sql
 
 				THIS SCRIPT IS PART OF THE TRACK:
 					Session: Solving Deadlock Scenarios
@@ -34,51 +37,44 @@ BEGIN TRANSACTION update_customers;
 GO
 	UPDATE	dbo.customers
 	SET		c_name = 'Uwe Ricken'
-	WHERE	c_custkey = 10;
-	GO
-
-	/* What locks do we have on objects with this session? */
-	SELECT	resource_type,
-			resource_description,
-			request_mode,
-			request_type,
-			request_status,
-			blocking_session_id
-	FROM	dbo.get_locking_status(@@SPID)
-	WHERE	resource_description = N'customers'
-			OR object_name = N'[dbo].[customers]'
-	ORDER BY
-			sort_order;
-	GO
-
-	/* After the second transaction has started we process with the next step */
-	UPDATE	dbo.nations
-	SET		n_name = 'Singapore'
-	WHERE	n_nationkey = 2;
-ROLLBACK TRANSACTION update_customers;
-GO
-
-/*
-	Session 2:	Update auf dbo.nations
-*/
-SET NOCOUNT ON;
-SET XACT_ABORT ON;
-GO
-
-USE ERP_Demo;
-GO
-
-BEGIN TRANSACTION update_customers;
-GO
-	UPDATE	dbo.nations
-	SET		n_name = 'Great Britain'
-	WHERE	n_nationkey = 2
+	WHERE	c_custkey = 10
 	OPTION	(MAXDOP 1);
 	GO
 
-	/* After the second transaction has started we process with the next step */
-	UPDATE	dbo.customers
-	SET		c_name = 'db Berater GmbH'
-	WHERE	c_custkey = 10;
+	/* What locks do we have on objects with this session? */
+	;WITH l
+	AS
+	(
+		SELECT	DISTINCT
+				request_session_id,
+				resource_type,
+				resource_description,
+				request_mode,
+				request_type,
+				request_status,
+				sort_order
+		FROM	dbo.get_locking_status(@@SPID)
+		WHERE	resource_description <> N'get_locking_status'
+				AND resource_associated_entity_id > 100
+	)
+	SELECT	request_session_id,
+			resource_type,
+			resource_description,
+			request_mode,
+			request_type,
+			request_status
+	FROM	l
+	ORDER BY
+			request_session_id,
+			sort_order;
+	GO
+
+	/*
+		NOW open 01 - classic deadlock - session 02.sql
+		Start the transaction and get back to this session!
+	*/
+	UPDATE	dbo.nations
+	SET		n_name = 'Singapore'
+	WHERE	n_nationkey = 2;
 ROLLBACK TRANSACTION update_customers;
 GO
