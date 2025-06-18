@@ -67,9 +67,9 @@ GO
 		Now go back to the 01 - classic deadlock - session 01.sql to process
 		the next step
 	*/
-	
 	UPDATE	dbo.customers
 	SET		c_name = 'db Berater GmbH'
-	WHERE	c_custkey = 10;
+	WHERE	c_custkey = 10
+	OPTION	(MAXDOP 1);
 ROLLBACK TRANSACTION update_customers;
 GO

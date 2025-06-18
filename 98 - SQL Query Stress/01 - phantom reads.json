@@ -20,11 +20,11 @@
 				"Login":"",
 				"MaxPoolSize":2,
 				"Password":"",
-				"Server":"NB-LENOVO-I\\SQL_2022",
+				"Server":"SQLServer",
 				"TrustServerCertificate":true
 		},
 		"MainQuery":"UPDATE demo.customers SET c_custkey = 99999 WHERE c_custkey = 10;\r\nUPDATE demo.customers SET c_custkey = 10 WHERE c_custkey = 99999;",
-		"NumIterations":10000,
+		"NumIterations":5000,
 		"NumThreads":1,
 		"ParamDbConnectionInfo":
 		{

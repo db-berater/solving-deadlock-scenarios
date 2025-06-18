@@ -20,19 +20,20 @@ USE ERP_Demo;
 GO
 
 DROP TABLE IF EXISTS dbo.process_status;
+GO
 
 /* Create the test table for processing */
 CREATE TABLE dbo.process_status
 (
-    id INT,
-    scancode VARCHAR(10),
-    ship_id VARCHAR(10),
-    istate INT
+    id          INT         NOT NULL,
+    scancode    VARCHAR(10) NOT NULL,
+    ship_id     VARCHAR(10) NOT NULL,
+    istate      INT         NOT NULL
 );
 GO
 
 /* Create a nonclustered index on the predicate attributes */
-CREATE NONCLUSTERED INDEX nix_TestTable_scancode_ship_id
+CREATE NONCLUSTERED INDEX nix_process_status_scancode_ship_id
 ON dbo.process_status
 (
 	scancode,
@@ -47,7 +48,7 @@ VALUES
 ('0000000000', '4711', 0, 1);
 GO
 
-CREATE OR ALTER PROCEDURE dbo.StartProcess
+CREATE OR ALTER PROCEDURE dbo.start_process
     @scancode   VARCHAR(10),
     @ship_id    VARCHAR(10)
 AS
@@ -62,7 +63,7 @@ BEGIN
                 AND ship_id = @ship_id;
  
         /* Now we start our activity which takes app. 10 seconds */
-        WAITFOR DELAY '00:00:05';
+        WAITFOR DELAY '00:00:01';
   
         /*
             and release the lock when the process is done

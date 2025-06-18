@@ -75,6 +75,7 @@ GO
 	*/
 	UPDATE	dbo.nations
 	SET		n_name = 'Singapore'
-	WHERE	n_nationkey = 2;
+	WHERE	n_nationkey = 2
+	OPTION	(MAXDOP 1);
 ROLLBACK TRANSACTION update_customers;
 GO

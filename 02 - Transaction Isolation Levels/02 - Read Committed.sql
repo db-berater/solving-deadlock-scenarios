@@ -130,13 +130,13 @@ SELECT	pc.file_id,
 		[c_name]
 FROM	demo.customers
 		CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
-WHERE	c_name = 'Uwe';
+WHERE	c_name LIKE 'Uwe%';
 
 
 /* Now we update Uwe */
 UPDATE	demo.customers
-SET		c_custkey = 10
-WHERE	c_name = 'Uwe';
+SET		c_custkey = 100000
+WHERE	c_name LIKE 'Uwe%';
 
 INSERT INTO @move_location
 (file_id, page_id, slot_id, c_custkey, c_name)
@@ -147,7 +147,22 @@ SELECT	pc.file_id,
 		[c_name]
 FROM	demo.customers
 		CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
-WHERE	c_name = 'Uwe';
+WHERE	c_name LIKE 'Uwe%';
+
+UPDATE	demo.customers
+SET		c_custkey = 10
+WHERE	c_name LIKE 'Uwe%';
+
+INSERT INTO @move_location
+(file_id, page_id, slot_id, c_custkey, c_name)
+SELECT	pc.file_id,
+		pc.page_id,
+		pc.slot_id,
+		[c_custkey],
+		[c_name]
+FROM	demo.customers
+		CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
+WHERE	c_name LIKE 'Uwe%';
 
 SELECT	transaction_id,
 		file_id,
@@ -174,7 +189,7 @@ CREATE TABLE #record_count ([rows] BIGINT NOT NULL);
 GO
 
 DECLARE	@rc INT = 1;
-WHILE @rc <= 10000
+WHILE @rc <= 2000
 BEGIN
 	INSERT INTO #record_count([rows])
 	SELECT	COUNT_BIG(*)

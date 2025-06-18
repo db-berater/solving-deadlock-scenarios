@@ -96,7 +96,8 @@ SELECT	[c_custkey],
 		[c_acctbal],
 		[c_comment]
 FROM	dbo.customers WITH (NOLOCK)
-WHERE	c_custkey = 11;
+WHERE	c_custkey = 11
+OPTION	(MAXDOP 1);
 GO
 
 /*
@@ -110,7 +111,7 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_uncommitted_locks'
-	, @filter_condition = N'activity_id LIKE ''C6C65F77-39CE-470D-ACAC-B8FA1D28D783%''';
+	, @filter_condition = N'activity_id LIKE ''3C362543-81BE-4FA9-943A-109701790546-3%''';
 GO
 
 /* Re-Implement the extended event for read uncommitted. */
@@ -138,7 +139,7 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_uncommitted_locks'
-	, @filter_condition = N'activity_id LIKE ''1E3D81E1-4C56-49EB-BC5D-099DFE910F46%''';
+	, @filter_condition = N'activity_id LIKE ''322156F2-FDEF-4295-9F98-F679220B2222-3%''';
 GO
 
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;

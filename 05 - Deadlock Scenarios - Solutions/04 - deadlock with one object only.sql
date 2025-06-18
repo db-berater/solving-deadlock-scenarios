@@ -38,14 +38,16 @@ ALTER EVENT SESSION [read_committed_locks] ON SERVER
 	DROP EVENT sqlserver.lock_released;
 GO
 
-/* ... and read the data from the ring buffer */
-EXEC dbo.sp_read_xevent_locks
-	@xevent_name = N'read_committed_locks'
-	, @filter_condition = N'activity_id LIKE ''C6C65F77-39CE-470D-ACAC-B8FA1D28D783%''';
-GO
+
 
 	SELECT	*
 	FROM	dbo.get_locking_status(@@SPID);
 	GO
 ROLLBACK TRANSACTION;
+GO
+
+/* ... and read the data from the ring buffer */
+EXEC dbo.sp_read_xevent_locks
+	@xevent_name = N'read_committed_locks'
+	, @filter_condition = N'activity_id LIKE ''C6C65F77-39CE-470D-ACAC-B8FA1D28D783%''';
 GO

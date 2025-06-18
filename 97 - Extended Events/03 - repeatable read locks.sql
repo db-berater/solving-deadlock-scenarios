@@ -33,7 +33,7 @@ GO
 	session_id:		session_id to track
 */
 :SETVAR EventName			repeatable_read_locks
-:SETVAR	session_id			76
+:SETVAR	session_id			70
 
 PRINT N'-------------------------------------------------------------';
 PRINT N'| Installation script by db Berater GmbH                     |';

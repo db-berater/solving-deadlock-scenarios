@@ -20,10 +20,6 @@ GO
 USE ERP_Demo;
 GO
 
-EXEC sp_drop_indexes @table_name = N'ALL';
-EXEC sp_drop_foreign_keys N'ALL';
-GO
-
 /*
 	Let's create the necessary indexes on the following tables
 	- dbo.customers (c_custkey) and (c_nationkey)
@@ -61,7 +57,7 @@ GO
 
 /*
 	Start the script to create the extended event first
-	{97- Extended Events]/04 - deadlock recordings.sql
+	[97- Extended Events]/02 - read committed locks.sql
 */
 BEGIN TRANSACTION
 GO

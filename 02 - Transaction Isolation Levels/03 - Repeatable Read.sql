@@ -119,6 +119,6 @@ END
 GO
 
 EXEC sp_drop_indexes @table_name = N'ALL';
-DROP SCHEMA IF EXISTS demo;
 DROP TABLE IF EXISTS demo.customers;
+DROP SCHEMA IF EXISTS demo;
 GO
