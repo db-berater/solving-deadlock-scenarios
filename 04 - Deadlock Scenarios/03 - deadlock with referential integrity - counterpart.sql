@@ -27,7 +27,7 @@ GO
 			request_mode,
 			request_type,
 			request_status
-	FROM	dbo.get_locking_status(@@SPID)
+	FROM	dbo.get_locking_status(@@SPID, DEFAULT)
 	WHERE	object_name = N'[dbo].[customers]'
 	ORDER BY
 			object_name,
@@ -44,7 +44,7 @@ GO
 			request_mode,
 			request_type,
 			request_status
-	FROM	dbo.get_locking_status(52)
+	FROM	dbo.get_locking_status(52, DEFAULT)
 	ORDER BY
 			request_session_id,
 			object_name,

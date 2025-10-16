@@ -36,7 +36,7 @@ SELECT	[c_custkey],
 		[c_comment]
 INTO	demo.customers
 FROM	dbo.customers
-WHERE	c_custkey < = 50000;
+WHERE	c_custkey < = 10000;
 GO
 
 ALTER TABLE demo.customers
@@ -62,7 +62,7 @@ GO
 			request_mode,
 			request_type,
 			request_status
-	FROM	dbo.get_locking_status(@@SPID)
+	FROM	dbo.get_locking_status(@@SPID, DEFAULT)
 	WHERE	resource_associated_entity_id >= 1000000
 			AND resource_description <> N'get_locking_status';
 	GO
@@ -98,7 +98,8 @@ GO
 
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
-	@xevent_name = N'read_committed_locks';
+	@xevent_name = N'read_committed_locks'
+	, @filter_condition = N'activity_id >= ''A6168E03-8905-4ED3-81E8-D24B4E5A1C98-93''';
 GO
 
 IF EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = N'read_committed_locks')

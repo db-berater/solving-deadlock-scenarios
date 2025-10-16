@@ -53,7 +53,7 @@ GO
 				request_type,
 				request_status,
 				sort_order
-		FROM	dbo.get_locking_status(@@SPID)
+		FROM	dbo.get_locking_status(@@SPID, DEFAULT)
 		WHERE	resource_description <> N'get_locking_status'
 				AND resource_associated_entity_id > 100
 	)

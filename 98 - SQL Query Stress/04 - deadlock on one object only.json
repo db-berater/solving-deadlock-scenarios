@@ -20,7 +20,7 @@
 				"Server":"SQLServer"
 		},
 		"MainQuery":"EXEC dbo.start_process\r\n\t@scancode = '0000000000',\r\n\t@ship_id = '4711';",
-		"NumIterations":20,
+		"NumIterations":5,
 		"NumThreads":5,
 		"ParamDbConnectionInfo":
 		{

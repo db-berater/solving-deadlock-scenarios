@@ -27,7 +27,7 @@ GO
 USE ERP_Demo;
 GO
 
-BEGIN TRANSACTION update_customers;
+BEGIN TRANSACTION update_nations;
 GO
 	UPDATE	dbo.nations
 	SET		n_name = 'Great Britain'
@@ -47,7 +47,7 @@ GO
 				request_type,
 				request_status,
 				sort_order
-		FROM	dbo.get_locking_status(@@SPID)
+		FROM	dbo.get_locking_status(@@SPID, DEFAULT)
 		WHERE	resource_description <> N'get_locking_status'
 				AND resource_associated_entity_id > 100
 	)
@@ -71,5 +71,5 @@ GO
 	SET		c_name = 'db Berater GmbH'
 	WHERE	c_custkey = 10
 	OPTION	(MAXDOP 1);
-ROLLBACK TRANSACTION update_customers;
+ROLLBACK TRANSACTION update_nations;
 GO

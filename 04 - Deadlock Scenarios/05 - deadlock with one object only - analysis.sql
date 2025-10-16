@@ -12,11 +12,16 @@
 	SQL Server Version: >= 2016
 	============================================================================
 */
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
+GO
+
 USE ERP_Demo;
 GO
 
 /* Check the locking chain for the UPDATE statement */
-BEGIN TRANSACTION
+BEGIN TRANSACTION update_process_status
+GO
     /* We lock the resource to prevent other activity */
     UPDATE  dbo.process_status
     SET     istate = 1
@@ -35,7 +40,7 @@ BEGIN TRANSACTION
 				request_type,
 				request_status,
 				sort_order
-		FROM	dbo.get_locking_status(NULL)
+		FROM	dbo.get_locking_status(NULL, DEFAULT)
 		WHERE	resource_description <> N'get_locking_status'
 				AND resource_associated_entity_id > 100
 	)
@@ -70,6 +75,9 @@ GO
 
 	- run the xevent 02 - read committed locks.sql and change the session_id to the current one!
 */
+EXEC dbo.sp_deactivate_query_store;
+GO
+
 BEGIN TRANSACTION
 GO
 	UPDATE  dbo.process_status
@@ -92,7 +100,7 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_committed_locks'
-	, @filter_condition = N'activity_id LIKE ''4E319875-85CB-46DF-90C3-C6E182F3501C%''';
+	, @filter_condition = N'activity_id LIKE ''E2052F43-7C3B-4CDA-A2D3-472C8132ACEE%''';
 GO
 
 /*
@@ -115,4 +123,11 @@ ON dbo.process_status
 	scancode,
 	ship_id
 );
+GO
+
+IF EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = N'read_committed_locks')
+BEGIN
+	RAISERROR (N'dropping existing extended event session [read_committed_locks]...', 0, 1) WITH NOWAIT;
+	DROP EVENT SESSION [read_committed_locks] ON SERVER;
+END
 GO

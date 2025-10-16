@@ -78,7 +78,7 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_committed_locks'
-	, @filter_condition = N'object_name = ''customers'' OR object_name = ''nations''';
+	, @filter_condition = N'activity_id >= ''4A6C57C0-E8EE-4988-81A0-890104D4E718-130''';
 GO
 
 /*

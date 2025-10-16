@@ -76,3 +76,11 @@ BEGIN
     COMMIT TRANSACTION;
 END
 GO
+
+/*
+    To demonstrate the deadlocks just load the template
+    [98 - SQL Query Stress]\[04 - deadlock on one object.json]
+
+    Open the formerly created extended event (Live Data)
+    deadlock_recordings
+*/
