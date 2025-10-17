@@ -62,7 +62,7 @@ BEGIN
         WHERE   scancode = @scancode
                 AND ship_id = @ship_id;
  
-        /* Now we start our activity which takes app. 10 seconds */
+        /* Now we start our activity which takes app. 1 - 3 seconds */
         WAITFOR DELAY '00:00:01';
   
         /*
@@ -79,7 +79,7 @@ GO
 
 /*
     To demonstrate the deadlocks just load the template
-    [98 - SQL Query Stress]\[04 - deadlock on one object.json]
+    [98 - SQL Query Stress]\[03 - deadlock on one object.json]
 
     Open the formerly created extended event (Live Data)
     deadlock_recordings

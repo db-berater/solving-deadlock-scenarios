@@ -12,12 +12,18 @@
 	SQL Server Version: >= 2016
 	============================================================================
 */
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
+GO
+
+USE ERP_Demo;
+GO
 
 BEGIN TRANSACTION update_customer
 GO
 	UPDATE	dbo.customers
 	SET		c_name = 'Uwe',
-			c_nationkey = 99
+			c_nationkey = 6
 	WHERE	c_custkey = 10;
 
 	SELECT	request_session_id,
@@ -33,9 +39,14 @@ GO
 			object_name,
 			sort_order;
 
-	SELECT	*
-	FROM	dbo.nations -- WITH (HOLDLOCK)
+	SELECT	%%lockres%%,
+			n_nationkey,
+            n_name,
+            n_regionkey,
+            n_comment
+	FROM	dbo.nations
 	WHERE	n_nationkey = 99;
+	GO
 
 	SELECT	request_session_id,
 			index_name,
@@ -44,7 +55,7 @@ GO
 			request_mode,
 			request_type,
 			request_status
-	FROM	dbo.get_locking_status(52, DEFAULT)
+	FROM	dbo.get_locking_status(NULL, DEFAULT)
 	ORDER BY
 			request_session_id,
 			object_name,
@@ -63,5 +74,12 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_committed_locks'
-	, @filter_condition = N'object_name = ''customers'' OR object_name = ''nations''';
+	, @filter_condition = N'activity_id LIKE ''CA0E4BE9-1372-44E3-B4B9-844DCCF7E7F0%''';
+GO
+
+IF EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = N'read_committed_locks')
+BEGIN
+	RAISERROR (N'dropping existing extended event session read_committed_locks...', 0, 1) WITH NOWAIT;
+	DROP EVENT SESSION [read_committed_locks] ON SERVER;
+END
 GO

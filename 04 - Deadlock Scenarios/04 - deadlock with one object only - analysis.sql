@@ -100,29 +100,7 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_committed_locks'
-	, @filter_condition = N'activity_id LIKE ''E2052F43-7C3B-4CDA-A2D3-472C8132ACEE%''';
-GO
-
-/*
-	By making the HEAP Table a clustered table with the - actual - Non Clustered Index
-	as the key attributes for the clustered index, the problem is gone!
-*/
-IF EXISTS
-(
-	SELECT	*
-	FROM	sys.indexes
-	WHERE	name = N'nix_process_status_scancode_ship_id'
-			AND OBJECT_ID = OBJECT_ID(N'dbo.process_status', N'U')
-)
-	DROP INDEX nix_process_status_scancode_ship_id ON dbo.process_status;
-	GO
-
-CREATE CLUSTERED INDEX cuix_process_status_scancode_ship_id
-ON dbo.process_status
-(
-	scancode,
-	ship_id
-);
+	, @filter_condition = N'activity_id LIKE ''A2D5559E-DA34-4B55-89E8-BE6B18218267%''';
 GO
 
 IF EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = N'read_committed_locks')

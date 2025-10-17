@@ -64,7 +64,7 @@ GO
 				request_type,
 				request_status,
 				sort_order
-		FROM	dbo.get_locking_status(NULL)
+		FROM	dbo.get_locking_status(NULL, DEFAULT)
 		WHERE	resource_description <> N'get_locking_status'
 				AND resource_associated_entity_id > 100
 	)
@@ -97,7 +97,7 @@ GO
 				request_type,
 				request_status,
 				sort_order
-		FROM	dbo.get_locking_status(@@SPID)
+		FROM	dbo.get_locking_status(@@SPID, DEFAULT)
 		WHERE	resource_description <> N'get_locking_status'
 				AND resource_associated_entity_id > 100
 	)
@@ -137,7 +137,3 @@ GO
 	OPTION	(MAXDOP 1);
 ROLLBACK TRANSACTION update_customers;
 GO
-
-	SELECT	*
-	FROM	dbo.get_locking_status(74);
-	GO

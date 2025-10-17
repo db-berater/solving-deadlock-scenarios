@@ -25,7 +25,7 @@ GO
 	session_id:		session_id to track
 */
 :SETVAR EventName			read_committed_locks
-:SETVAR	session_id			75
+:SETVAR	session_id			62
 
 PRINT N'-------------------------------------------------------------';
 PRINT N'| Installation script by db Berater GmbH                     |';
