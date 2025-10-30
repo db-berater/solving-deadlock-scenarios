@@ -65,11 +65,6 @@ ROLLBACK
 GO
 
 /*
-	We stop here and run the process with SQLQueryStress!!!
-*/
-
-
-/*
 	For a deeper understanding of the problem we must see the complete
 	locking chain when an update happens
 
@@ -100,7 +95,7 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_committed_locks'
-	, @filter_condition = N'activity_id LIKE ''A2D5559E-DA34-4B55-89E8-BE6B18218267%''';
+	, @filter_condition = N'activity_id >= ''0D5B667F-2648-45A1-810D-AF8B2ACAA6A5-64''';
 GO
 
 IF EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = N'read_committed_locks')

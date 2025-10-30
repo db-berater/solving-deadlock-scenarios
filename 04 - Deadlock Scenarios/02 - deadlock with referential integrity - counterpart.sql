@@ -56,6 +56,8 @@ GO
 			request_type,
 			request_status
 	FROM	dbo.get_locking_status(NULL, DEFAULT)
+	WHERE	resource_description NOT LIKE N'sys%'
+			AND resource_description <> N'get_locking_status'
 	ORDER BY
 			request_session_id,
 			object_name,

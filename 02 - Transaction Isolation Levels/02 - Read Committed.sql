@@ -99,7 +99,7 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_committed_locks'
-	, @filter_condition = N'activity_id >= ''A6168E03-8905-4ED3-81E8-D24B4E5A1C98-93''';
+	, @filter_condition = N'activity_id >= ''0ABA4573-4E6F-48A2-B435-50CC77C991B4-93''';
 GO
 
 IF EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = N'read_committed_locks')

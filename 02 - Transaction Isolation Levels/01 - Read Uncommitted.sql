@@ -24,7 +24,7 @@ GO
 	to implement the extended event which monitors SCH_S locks!
 	Change the session_id variable in the script to this session_id!
 
-	-- Copy the following statement in another query window and exeute it
+	-- Copy the following statement in another query window and execute it
 	-- it will cause an X-lock on the page where customer 10 is stored.
 
 	USE ERP_Demo;
@@ -67,7 +67,7 @@ AS
 			request_type,
 			request_status,
 			sort_order
-	FROM	dbo.get_locking_status(NULL)
+	FROM	dbo.get_locking_status(NULL, 1)
 	WHERE	resource_description <> N'get_locking_status'
 			AND resource_associated_entity_id > 100
 )
