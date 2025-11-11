@@ -1,0 +1,40 @@
+{
+		"CollectIoStats":true,
+		"CollectTimeStats":true,
+		"CommandTimeout":0,
+		"ConnectionTimeout":15,
+		"DelayBetweenQueries":0,
+		"EnableConnectionPooling":true,
+		"ForceDataRetrieval":false,
+		"KillQueriesOnCancel":true,
+		"MainDbConnectionInfo":
+		{
+				"ApplicationIntent":0,
+				"ConnectTimeout":15,
+				"Database":"ERP_Demo",
+				"EnablePooling":true,
+				"IntegratedAuth":true,
+				"Login":"",
+				"MaxPoolSize":2,
+				"Password":"",
+				"Server":"SQLServer"
+		},
+		"MainQuery":"dbo.insert_demo_row @c_custkey = @c_custkey;",
+		"NumIterations":100,
+		"NumThreads":5,
+		"ParamDbConnectionInfo":
+		{
+				"ApplicationIntent":0,
+				"ConnectTimeout":0,
+				"Database":"",
+				"EnablePooling":true,
+				"IntegratedAuth":true,
+				"Login":"",
+				"MaxPoolSize":0,
+				"Password":"",
+				"Server":""
+		},
+		"ParamMappings":[{"Key":"@c_custkey","Value":"c_custkey"}],
+		"ParamQuery":"SELECT c_custkey FROM (VALUES (55), (56)) AS x (c_custkey);",
+		"ShareDbSettings":true
+}

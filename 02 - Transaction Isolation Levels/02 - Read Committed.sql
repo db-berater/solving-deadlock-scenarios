@@ -77,7 +77,8 @@ GO
 	which covers all locks while the SELECT is running.
 	You must change the session_id to the session_id of this tab!
 */
-SELECT	[c_custkey],
+SELECT	/* batch code */
+		[c_custkey],
 		[c_mktsegment],
 		[c_nationkey],
 		[c_name],
@@ -98,80 +99,81 @@ GO
 
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
-	@xevent_name = N'read_committed_locks'
-	, @filter_condition = N'activity_id >= ''0ABA4573-4E6F-48A2-B435-50CC77C991B4-93''';
-GO
-
-IF EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = N'read_committed_locks')
-BEGIN
-	RAISERROR (N'dropping existing extended event session [read_committed_locks]...', 0, 1) WITH NOWAIT;
-	DROP EVENT SESSION [read_committed_locks] ON SERVER;
-END
+	@xevent_name = N'read_committed_locks',
+	@filter_batch_only = 1;
 GO
 
 /*
-	Demonstration of phantom reads...
+	The isolation level READ COMMITTED can cause phantom reads.
+
+	Phantom reads occur in database systems when a transaction
+	reads a set of rows that satisfy a condition, and then—before 
+	the transaction completes—another transaction inserts or deletes 
+	rows that also satisfy that condition.
+
 */
-DECLARE	@move_location TABLE
-(
-	transaction_id	INT				NOT NULL	IDENTITY (1, 1),
-	file_id			SMALLINT		NOT NULL,
-	page_id			BIGINT			NOT NULL,
-	slot_id			SMALLINT		NOT NULL,
-	c_custkey		BIGINT			NOT NULL,
-	c_name			VARCHAR(25)		NOT NULL
-);
+BEGIN
+	DECLARE	@move_location TABLE
+	(
+		transaction_id	INT				NOT NULL	IDENTITY (1, 1),
+		file_id			SMALLINT		NOT NULL,
+		page_id			BIGINT			NOT NULL,
+		slot_id			SMALLINT		NOT NULL,
+		c_custkey		BIGINT			NOT NULL,
+		c_name			VARCHAR(25)		NOT NULL
+	);
 
-INSERT INTO @move_location
-(file_id, page_id, slot_id, c_custkey, c_name)
-SELECT	pc.file_id,
-		pc.page_id,
-		pc.slot_id,
-		[c_custkey],
-		[c_name]
-FROM	demo.customers
-		CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
-WHERE	c_name LIKE 'Uwe%';
+	INSERT INTO @move_location
+	(file_id, page_id, slot_id, c_custkey, c_name)
+	SELECT	pc.file_id,
+			pc.page_id,
+			pc.slot_id,
+			[c_custkey],
+			[c_name]
+	FROM	demo.customers
+			CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
+	WHERE	c_name LIKE 'Uwe%';
 
 
-/* Now we update Uwe */
-UPDATE	demo.customers
-SET		c_custkey = 100000
-WHERE	c_name LIKE 'Uwe%';
+	/* Now we update Uwe */
+	UPDATE	demo.customers
+	SET		c_custkey = 100000
+	WHERE	c_name LIKE 'Uwe%';
 
-INSERT INTO @move_location
-(file_id, page_id, slot_id, c_custkey, c_name)
-SELECT	pc.file_id,
-		pc.page_id,
-		pc.slot_id,
-		[c_custkey],
-		[c_name]
-FROM	demo.customers
-		CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
-WHERE	c_name LIKE 'Uwe%';
+	INSERT INTO @move_location
+	(file_id, page_id, slot_id, c_custkey, c_name)
+	SELECT	pc.file_id,
+			pc.page_id,
+			pc.slot_id,
+			[c_custkey],
+			[c_name]
+	FROM	demo.customers
+			CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
+	WHERE	c_name LIKE 'Uwe%';
 
-UPDATE	demo.customers
-SET		c_custkey = 10
-WHERE	c_name LIKE 'Uwe%';
+	UPDATE	demo.customers
+	SET		c_custkey = 10
+	WHERE	c_name LIKE 'Uwe%';
 
-INSERT INTO @move_location
-(file_id, page_id, slot_id, c_custkey, c_name)
-SELECT	pc.file_id,
-		pc.page_id,
-		pc.slot_id,
-		[c_custkey],
-		[c_name]
-FROM	demo.customers
-		CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
-WHERE	c_name LIKE 'Uwe%';
+	INSERT INTO @move_location
+	(file_id, page_id, slot_id, c_custkey, c_name)
+	SELECT	pc.file_id,
+			pc.page_id,
+			pc.slot_id,
+			[c_custkey],
+			[c_name]
+	FROM	demo.customers
+			CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
+	WHERE	c_name LIKE 'Uwe%';
 
-SELECT	transaction_id,
-		file_id,
-		page_id,
-		slot_id,
-		c_custkey,
-		c_name
-FROM	@move_location
+	SELECT	transaction_id,
+			file_id,
+			page_id,
+			slot_id,
+			c_custkey,
+			c_name
+	FROM	@move_location;
+END
 GO
 
 /*

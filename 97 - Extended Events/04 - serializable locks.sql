@@ -1,9 +1,9 @@
 /*
 	============================================================================
-	File:		02 - read committed locks.sql
+	File:		04 - serializable locks.sql
 
-	Summary:	creates an Extended Event to track all locks from a SELECT
-				against a resource in READ COMMITTED isolation level
+	Summary:	creates an Extended Event to track, when a session aquires and
+				releases RangeS-S, Range
 				
 				THIS SCRIPT IS PART OF THE TRACK:
 					Session: Solving Deadlock Scenarios
@@ -24,8 +24,8 @@ GO
 
 	session_id:		session_id to track
 */
-:SETVAR EventName			read_committed_locks
-:SETVAR	session_id			52
+:SETVAR EventName			serializable_locks
+:SETVAR	session_id			71
 
 PRINT N'-------------------------------------------------------------';
 PRINT N'| Installation script by db Berater GmbH                     |';
@@ -54,7 +54,8 @@ ADD EVENT sqlserver.sql_batch_starting
 ),
 ADD EVENT sqlserver.sql_batch_completed
 (
-	ACTION (sqlserver.session_id)
+	ACTION
+	(sqlserver.session_id)
 	WHERE
 	(
 		sqlserver.is_system = 0
@@ -78,6 +79,13 @@ ADD EVENT sqlserver.lock_acquired
 			OR mode = 'IU'
 			OR mode = 'SIX'
 			OR mode = 'UIX'
+			OR mode = 'RI_S'
+			OR mode = 'RI_U'
+			OR mode = 'RI_X'
+			OR mode = 'RS_S'
+			OR mode = 'RS_U'
+			OR mode = 'RX_S'
+			OR mode = 'RX_U'
 		)
 ),
 ADD EVENT sqlserver.lock_released
@@ -97,18 +105,25 @@ ADD EVENT sqlserver.lock_released
 			OR mode = 'IU'
 			OR mode = 'SIX'
 			OR mode = 'UIX'
+			OR mode = 'RI_S'
+			OR mode = 'RI_U'
+			OR mode = 'RI_X'
+			OR mode = 'RS_S'
+			OR mode = 'RS_U'
+			OR mode = 'RX_S'
+			OR mode = 'RX_U'
 		)
 )
 ADD TARGET package0.ring_buffer (SET max_events_limit = 0, max_memory = 10240)
 WITH
 (
-	MAX_MEMORY = 4096 KB,
-	EVENT_RETENTION_MODE = NO_EVENT_LOSS,
-	MAX_DISPATCH_LATENCY= 1 SECONDS,
-	MAX_EVENT_SIZE = 0 KB,
-	MEMORY_PARTITION_MODE = NONE,
-	TRACK_CAUSALITY = ON,
-	STARTUP_STATE = OFF
+	MAX_MEMORY=4096 KB,
+	EVENT_RETENTION_MODE=ALLOW_SINGLE_EVENT_LOSS,
+	MAX_DISPATCH_LATENCY= 5 SECONDS,
+	MAX_EVENT_SIZE=0 KB,
+	MEMORY_PARTITION_MODE=NONE,
+	TRACK_CAUSALITY=ON,
+	STARTUP_STATE=OFF
 );
 GO
 
