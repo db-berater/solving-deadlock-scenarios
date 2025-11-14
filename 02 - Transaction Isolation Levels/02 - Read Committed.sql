@@ -19,29 +19,8 @@ GO
 USE ERP_Demo;
 GO
 
-IF SCHEMA_ID(N'demo') IS NULL
-	EXEC sp_executesql N'CREATE SCHEMA [demo] AUTHORIZATION dbo;'
-	GO
-
-DROP TABLE IF EXISTS demo.customers;
-GO
-
-SELECT	[c_custkey],
-		[c_mktsegment],
-		[c_nationkey],
-		[c_name],
-		[c_address],
-		[c_phone],
-		[c_acctbal],
-		[c_comment]
-INTO	demo.customers
-FROM	dbo.customers
-WHERE	c_custkey < = 10000;
-GO
-
-ALTER TABLE demo.customers
-ADD CONSTRAINT pk_demo_customers PRIMARY KEY CLUSTERED (c_custkey)
-WITH (SORT_IN_TEMPDB = ON, DATA_COMPRESSION = PAGE);
+/* Let's create necessary indexes on dbo.customers for the demos */
+EXEC sp_create_indexes_customers;
 GO
 
 BEGIN TRANSACTION;
@@ -54,7 +33,7 @@ GO
 			[c_phone],
 			[c_acctbal],
 			[c_comment]
-	FROM	demo.customers
+	FROM	dbo.customers
 	
 	SELECT	request_session_id,
 			resource_type,
@@ -86,7 +65,9 @@ SELECT	/* batch code */
 		[c_phone],
 		[c_acctbal],
 		[c_comment]
-FROM	demo.customers;
+FROM	dbo.customers
+WHERE	c_custkey <= 100000
+OPTION	(MAXDOP 1);
 GO
 
 /*
@@ -99,8 +80,8 @@ GO
 
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
-	@xevent_name = N'read_committed_locks',
-	@filter_batch_only = 1;
+	@xevent_name = N'read_committed_locks'
+	, @filter_batch_only = 1;
 GO
 
 /*
@@ -113,7 +94,9 @@ GO
 
 */
 BEGIN
-	DECLARE	@move_location TABLE
+	DROP TABLE IF EXISTS #move_location;
+
+	CREATE TABLE #move_location
 	(
 		transaction_id	INT				NOT NULL	IDENTITY (1, 1),
 		file_id			SMALLINT		NOT NULL,
@@ -123,46 +106,46 @@ BEGIN
 		c_name			VARCHAR(25)		NOT NULL
 	);
 
-	INSERT INTO @move_location
+	INSERT INTO #move_location
 	(file_id, page_id, slot_id, c_custkey, c_name)
 	SELECT	pc.file_id,
 			pc.page_id,
 			pc.slot_id,
 			[c_custkey],
 			[c_name]
-	FROM	demo.customers
+	FROM	dbo.customers
 			CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
 	WHERE	c_name LIKE 'Uwe%';
 
 
 	/* Now we update Uwe */
-	UPDATE	demo.customers
-	SET		c_custkey = 100000
+	UPDATE	dbo.customers
+	SET		c_custkey = 2000000
 	WHERE	c_name LIKE 'Uwe%';
 
-	INSERT INTO @move_location
+	INSERT INTO #move_location
 	(file_id, page_id, slot_id, c_custkey, c_name)
 	SELECT	pc.file_id,
 			pc.page_id,
 			pc.slot_id,
 			[c_custkey],
 			[c_name]
-	FROM	demo.customers
+	FROM	dbo.customers
 			CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
 	WHERE	c_name LIKE 'Uwe%';
 
-	UPDATE	demo.customers
+	UPDATE	dbo.customers
 	SET		c_custkey = 10
 	WHERE	c_name LIKE 'Uwe%';
 
-	INSERT INTO @move_location
+	INSERT INTO #move_location
 	(file_id, page_id, slot_id, c_custkey, c_name)
 	SELECT	pc.file_id,
 			pc.page_id,
 			pc.slot_id,
 			[c_custkey],
 			[c_name]
-	FROM	demo.customers
+	FROM	dbo.customers
 			CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
 	WHERE	c_name LIKE 'Uwe%';
 
@@ -172,7 +155,7 @@ BEGIN
 			slot_id,
 			c_custkey,
 			c_name
-	FROM	@move_location;
+	FROM	#move_location;
 END
 GO
 
@@ -192,11 +175,11 @@ CREATE TABLE #record_count ([rows] BIGINT NOT NULL);
 GO
 
 DECLARE	@rc INT = 1;
-WHILE @rc <= 2000
+WHILE @rc <= 1000
 BEGIN
 	INSERT INTO #record_count([rows])
 	SELECT	COUNT_BIG(*)
-	FROM	demo.customers;
+	FROM	dbo.customers;
 
 	SET	@rc += 1;
 END
@@ -222,9 +205,5 @@ END
 GO
 
 DROP TABLE IF EXISTS #record_count;
-DROP TABLE IF EXISTS demo.customers;
 DROP SCHEMA IF EXISTS demo;
-GO
-
-EXEC sp_drop_indexes @table_name = N'ALL';
 GO

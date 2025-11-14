@@ -7,3 +7,4 @@
 *.sqlite
 DocumentLayout*.json
 VSWorkspace*.json
+qr_code_download.png

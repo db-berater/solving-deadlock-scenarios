@@ -33,6 +33,7 @@ GO
 
 	- Usage of same call stack (order of executions)
 	- Aquire a lock before we start the process
+	- Change the isolation level to REPEATABLE READ to prevent other locks on the resource!
 	- Hold required rows from the additional resource in a temporary object
 */
 BEGIN TRANSACTION update_customers;

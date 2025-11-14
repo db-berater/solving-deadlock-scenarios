@@ -19,29 +19,7 @@ GO
 USE ERP_Demo;
 GO
 
-IF SCHEMA_ID(N'demo') IS NULL
-	EXEC sp_executesql N'CREATE SCHEMA [demo] AUTHORIZATION dbo;'
-	GO
-
-DROP TABLE IF EXISTS demo.customers;
-GO
-
-SELECT	[c_custkey],
-		[c_mktsegment],
-		[c_nationkey],
-		[c_name],
-		[c_address],
-		[c_phone],
-		[c_acctbal],
-		[c_comment]
-INTO	demo.customers
-FROM	dbo.customers
-WHERE	c_custkey < = 50000;
-GO
-
-ALTER TABLE demo.customers
-ADD CONSTRAINT pk_demo_customers PRIMARY KEY CLUSTERED (c_custkey)
-WITH (SORT_IN_TEMPDB = ON, DATA_COMPRESSION = PAGE);
+EXEC dbo.sp_create_indexes_customers;
 GO
 
 /*
@@ -57,20 +35,29 @@ GO
 			[c_phone],
 			[c_acctbal],
 			[c_comment]
-	FROM	demo.customers WITH (REPEATABLEREAD)
-	WHERE	c_custkey <= 20;
+	FROM	dbo.customers WITH (REPEATABLEREAD)
+	WHERE	c_custkey <= 10;
+	GO
 
 	SELECT	request_session_id,
 			resource_type,
 			resource_description,
+			rk.c_custkey,
 			request_mode,
 			request_type,
 			request_status
-	FROM	dbo.get_locking_status(@@SPID)
+	FROM	dbo.get_locking_status(@@SPID, DEFAULT) AS gls
+			OUTER APPLY
+			(
+				SELECT	TOP (1) c_custkey
+				FROM	dbo.customers AS i_c
+				WHERE	CAST(i_c.%%lockres%% AS NVARCHAR(128)) = gls.resource_description
+			) AS rk
 	WHERE	resource_associated_entity_id >= 1000000
 			AND resource_description <> N'get_locking_status'
 	ORDER BY
-			sort_order;
+			sort_order,
+			rk.c_custkey;
 	GO
 ROLLBACK TRANSACTION;
 GO
@@ -83,7 +70,8 @@ GO
 	which covers all locks while the SELECT is running.
 	You must change the session_id to the session_id of this tab!
 */
-SELECT	[c_custkey],
+SELECT	/* batch code */
+		[c_custkey],
 		[c_mktsegment],
 		[c_nationkey],
 		[c_name],
@@ -91,8 +79,8 @@ SELECT	[c_custkey],
 		[c_phone],
 		[c_acctbal],
 		[c_comment]
-FROM	demo.customers WITH (REPEATABLEREAD)
-WHERE	c_custkey <= 50;
+FROM	dbo.customers WITH (REPEATABLEREAD)
+WHERE	c_custkey <= 10;
 GO
 
 /*
@@ -105,7 +93,46 @@ GO
 
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
-	@xevent_name = N'repeatable_read_locks';
+	@xevent_name = N'repeatable_read_locks'
+	, @filter_batch_only = 1;
+GO
+
+/*
+	Repeatable Reads can cause Phantom Reads, too!
+*/
+DROP TABLE IF EXISTS dbo.demo_customers;
+GO
+
+CREATE TABLE dbo.demo_customers
+(
+	c_custkey		BIGINT		NOT NULL PRIMARY KEY CLUSTERED,
+	c_name			VARCHAR(64)	NOT NULL,
+	c_mktsegment	VARCHAR(64)	NOT NULL
+);
+GO
+
+/* We insert the TOP 1000 even c_custkey values into the table */
+INSERT INTO dbo.demo_customers WITH (TABLOCK)
+(c_custkey, c_name, c_mktsegment)
+SELECT	c_custkey,
+		c_name,
+		c_mktsegment
+FROM	dbo.customers
+WHERE	c_custkey <= 1000
+		AND c_custkey % 2 = 0;
+GO
+
+BEGIN TRANSACTION
+GO
+	SELECT	COUNT_BIG(*)
+	FROM	dbo.demo_customers WITH (REPEATABLEREAD)
+	WHERE	c_custkey <= 10;
+
+	/* Now we insert another row into the table */
+	SELECT	COUNT_BIG(*)
+	FROM	dbo.demo_customers WITH (REPEATABLEREAD)
+	WHERE	c_custkey <= 10;
+COMMIT TRANSACTION;
 GO
 
 /*
@@ -118,7 +145,5 @@ BEGIN
 END
 GO
 
-EXEC sp_drop_indexes @table_name = N'ALL';
-DROP TABLE IF EXISTS demo.customers;
-DROP SCHEMA IF EXISTS demo;
+DROP TABLE IF EXISTS dbo.demo_customers;
 GO

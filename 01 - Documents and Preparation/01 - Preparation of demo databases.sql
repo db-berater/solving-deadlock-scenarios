@@ -6,7 +6,7 @@
 				the backup medium for distribution of data.
 				
 				THIS SCRIPT IS PART OF THE TRACK:
-					Session - All about Statistics
+					Session - Solving Deadlock Scenarios
 
 	Date:		October 2024
 	Revion:		January 2025

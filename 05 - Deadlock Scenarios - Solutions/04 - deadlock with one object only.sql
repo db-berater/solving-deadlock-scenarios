@@ -51,7 +51,8 @@ GO
 
 BEGIN TRANSACTION
 GO
-	UPDATE  dbo.process_status
+	UPDATE  /* batch code */
+			dbo.process_status
 	SET     istate = 0
 	WHERE   scancode = '0000000000'
 			AND ship_id = '4711';
@@ -71,7 +72,7 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_committed_locks'
-	, @filter_condition = N'activity_id LIKE ''B83856D4-21E7-49E2-A94A-527421B504BE%''';
+	, @filter_batch_only = 1;
 GO
 
 /* Clean the kitchen */

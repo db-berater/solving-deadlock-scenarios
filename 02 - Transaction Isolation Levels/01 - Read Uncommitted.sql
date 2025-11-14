@@ -86,8 +86,11 @@ GO
 
 /*
 	Let's see what read uncommitted isolation level will do.
+	Before you run the SQL code implement the extended event
+	./97 - Extended Events/01 - read uncommitted locks.sql
 */
-SELECT	[c_custkey],
+SELECT	/* batch code */
+		[c_custkey],
 		[c_mktsegment],
 		[c_nationkey],
 		[c_name],
@@ -111,11 +114,15 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_uncommitted_locks'
-	, @filter_condition = N'activity_id LIKE ''3C362543-81BE-4FA9-943A-109701790546-3%''';
+	, @filter_batch_only = 1;
 GO
 
-/* Re-Implement the extended event for read uncommitted. */
-SELECT	[c_custkey],
+/*
+	Before you run the SQL code implement the extended event
+	./97 - Extended Events/01 - read uncommitted locks.sql
+*/
+SELECT	/* batch code */
+		[c_custkey],
 		[c_mktsegment],
 		[c_nationkey],
 		[c_name],
@@ -139,7 +146,7 @@ GO
 /* ... and read the data from the ring buffer */
 EXEC dbo.sp_read_xevent_locks
 	@xevent_name = N'read_uncommitted_locks'
-	, @filter_condition = N'activity_id LIKE ''322156F2-FDEF-4295-9F98-F679220B2222-3%''';
+	, @filter_batch_only = 1;
 GO
 
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;

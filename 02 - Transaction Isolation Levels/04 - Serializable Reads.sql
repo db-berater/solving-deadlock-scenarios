@@ -19,57 +19,44 @@ GO
 USE ERP_Demo;
 GO
 
-IF SCHEMA_ID(N'demo') IS NULL
-	EXEC sp_executesql N'CREATE SCHEMA [demo] AUTHORIZATION dbo;'
-	GO
-
-DROP TABLE IF EXISTS demo.customers;
-GO
-
 /*
-	We create a table with EVEN key attributes (2, 4, ...)
+	Let's first create a demo table with customer key values which are even!
+	2, 4, 6, 8, ....
 */
-SELECT	[c_custkey],
-		[c_mktsegment],
-		[c_nationkey],
-		[c_name],
-		[c_address],
-		[c_phone],
-		[c_acctbal],
-		[c_comment]
-INTO	demo.customers
-FROM	dbo.customers
-WHERE	c_custkey < = 100
-		AND c_custkey % 2 = 0;
+BEGIN
+	DROP TABLE IF EXISTS dbo.demo_customers;
+
+	CREATE TABLE dbo.demo_customers
+	(
+		c_custkey		BIGINT		NOT NULL PRIMARY KEY CLUSTERED,
+		c_name			VARCHAR(64)	NOT NULL,
+		c_mktsegment	VARCHAR(64)	NOT NULL
+	);
+
+	/* We insert the TOP 1000 even c_custkey values into the table */
+	INSERT INTO dbo.demo_customers WITH (TABLOCK)
+	(c_custkey, c_name, c_mktsegment)
+	SELECT	c_custkey,
+			c_name,
+			c_mktsegment
+	FROM	dbo.customers
+	WHERE	c_custkey <= 500
+			AND c_custkey % 2 = 0;
+END
 GO
 
-ALTER TABLE demo.customers
-ADD CONSTRAINT pk_demo_customers PRIMARY KEY CLUSTERED (c_custkey)
-WITH (SORT_IN_TEMPDB = ON, DATA_COMPRESSION = PAGE);
-GO
-
-SELECT	[c_custkey],
-		[c_mktsegment],
-		[c_nationkey],
-		[c_name],
-		[c_address],
-		[c_phone],
-		[c_acctbal],
-		[c_comment]
-FROM	demo.customers
+SELECT	c_custkey,
+		c_name,
+		c_mktsegment
+FROM	dbo.demo_customers
 GO
 
 BEGIN TRANSACTION;
 GO
-	SELECT	[c_custkey],
-			[c_mktsegment],
-			[c_nationkey],
-			[c_name],
-			[c_address],
-			[c_phone],
-			[c_acctbal],
-			[c_comment]
-	FROM	demo.customers WITH (SERIALIZABLE)
+	SELECT	c_custkey,
+			c_name,
+			c_mktsegment
+	FROM	dbo.demo_customers WITH (SERIALIZABLE)
 	WHERE	c_custkey BETWEEN 6 AND 10;
 	GO
 
@@ -78,7 +65,7 @@ GO
 	(
 		SELECT	%%lockres%%		AS	resource_description,
 				c_custkey
-		FROM	demo.customers WITH (READCOMMITTED)
+		FROM	dbo.demo_customers WITH (READCOMMITTED)
 	)
 	SELECT	gls.request_session_id,
 			gls.resource_type,
@@ -107,14 +94,9 @@ GO
 */
 SELECT	/* batch code */
 		c_custkey,
-        c_mktsegment,
-        c_nationkey,
-        c_name,
-        c_address,
-        c_phone,
-        c_acctbal,
-        c_comment
-FROM	demo.customers WITH (SERIALIZABLE)
+		c_name,
+        c_mktsegment
+FROM	dbo.demo_customers WITH (SERIALIZABLE)
 WHERE	c_custkey = 10;
 GO
 
@@ -131,14 +113,9 @@ GO
 
 SELECT	/* batch code */
 		c_custkey,
-        c_mktsegment,
-        c_nationkey,
-        c_name,
-        c_address,
-        c_phone,
-        c_acctbal,
-        c_comment
-FROM	demo.customers WITH (SERIALIZABLE)
+		c_name,
+        c_mktsegment
+FROM	dbo.demo_customers WITH (SERIALIZABLE)
 WHERE	c_custkey BETWEEN 5 AND 10;
 GO
 
@@ -160,6 +137,6 @@ WHILE @@TRANCOUNT > 0
 	ROLLBACK TRANSACTION;
 GO
 
-DROP TABLE IF EXISTS demo.customers;
+DROP TABLE IF EXISTS dbo.demo_customers;
 DROP SCHEMA IF EXISTS demo;
 GO
