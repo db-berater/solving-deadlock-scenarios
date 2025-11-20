@@ -19,6 +19,9 @@ GO
 USE ERP_Demo;
 GO
 
+EXEC dbo.sp_deactivate_query_store;
+GO
+
 /*
 	By making the HEAP Table a clustered table with the - actual - Non Clustered Index
 	as the key attributes for the clustered index, the problem is gone!
@@ -39,9 +42,6 @@ ON dbo.process_status
 	scancode,
 	ship_id
 );
-GO
-
-EXEC dbo.sp_deactivate_query_store;
 GO
 
 /*

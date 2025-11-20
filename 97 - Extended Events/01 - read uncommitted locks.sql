@@ -25,7 +25,7 @@ GO
 	session_id:		session_id to track
 */
 :SETVAR EventName			read_uncommitted_locks
-:SETVAR	session_id			54
+:SETVAR	session_id			55
 
 PRINT N'-------------------------------------------------------------';
 PRINT N'| Installation script by db Berater GmbH                     |';
@@ -70,8 +70,10 @@ ADD EVENT sqlserver.lock_acquired
 		AND sqlserver.session_id = $(session_id)
 		AND
 		(
-			mode = 1		/* SCH_S */
-			OR mode = 2		/* SCH_M */
+			   mode = 'SCH_S'
+			OR mode = 'SCH_M'
+			OR mode = 'IS'
+			OR mode = 'S'
 		)
 ),
 ADD EVENT sqlserver.lock_released
@@ -82,8 +84,10 @@ ADD EVENT sqlserver.lock_released
 		AND sqlserver.session_id = $(session_id)
 		AND
 		(
-			mode = 1		/* SCH_S */
-			OR mode = 2		/* SCH_M */
+			   mode = 'SCH_S'
+			OR mode = 'SCH_M'
+			OR mode = 'IS'
+			OR mode = 'S'
 		)
 )
 ADD TARGET package0.ring_buffer (SET max_events_limit = 0, max_memory = 10240)

@@ -20,6 +20,7 @@ USE ERP_Demo;
 GO
 
 /* Let's create necessary indexes on dbo.customers for the demos */
+EXEC dbo.sp_deactivate_query_store;
 EXEC sp_create_indexes_customers;
 GO
 
@@ -34,6 +35,7 @@ GO
 			[c_acctbal],
 			[c_comment]
 	FROM	dbo.customers
+	WHERE	c_custkey <= 1000;
 	
 	SELECT	request_session_id,
 			resource_type,
@@ -66,7 +68,7 @@ SELECT	/* batch code */
 		[c_acctbal],
 		[c_comment]
 FROM	dbo.customers
-WHERE	c_custkey <= 100000
+WHERE	c_custkey <= 1000
 OPTION	(MAXDOP 1);
 GO
 
@@ -115,13 +117,13 @@ BEGIN
 			[c_name]
 	FROM	dbo.customers
 			CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
-	WHERE	c_name LIKE 'Uwe%';
+	WHERE	c_custkey = 10;
 
 
 	/* Now we update Uwe */
 	UPDATE	dbo.customers
 	SET		c_custkey = 2000000
-	WHERE	c_name LIKE 'Uwe%';
+	WHERE	c_custkey = 10;
 
 	INSERT INTO #move_location
 	(file_id, page_id, slot_id, c_custkey, c_name)
@@ -132,11 +134,11 @@ BEGIN
 			[c_name]
 	FROM	dbo.customers
 			CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
-	WHERE	c_name LIKE 'Uwe%';
+	WHERE	c_custkey = 2000000;
 
 	UPDATE	dbo.customers
 	SET		c_custkey = 10
-	WHERE	c_name LIKE 'Uwe%';
+	WHERE	c_custkey = 2000000;
 
 	INSERT INTO #move_location
 	(file_id, page_id, slot_id, c_custkey, c_name)
@@ -147,7 +149,7 @@ BEGIN
 			[c_name]
 	FROM	dbo.customers
 			CROSS APPLY sys.fn_PhysLocCracker(%%physloc%%) AS pc
-	WHERE	c_name LIKE 'Uwe%';
+	WHERE	c_custkey = 10;
 
 	SELECT	transaction_id,
 			file_id,
@@ -175,7 +177,7 @@ CREATE TABLE #record_count ([rows] BIGINT NOT NULL);
 GO
 
 DECLARE	@rc INT = 1;
-WHILE @rc <= 1000
+WHILE @rc <= 200
 BEGIN
 	INSERT INTO #record_count([rows])
 	SELECT	COUNT_BIG(*)

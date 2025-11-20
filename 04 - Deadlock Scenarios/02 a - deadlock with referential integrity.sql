@@ -20,6 +20,9 @@ GO
 USE ERP_Demo;
 GO
 
+EXEC dbo.sp_deactivate_query_store;
+GO
+
 /*
 	Let's create the necessary indexes on the following tables
 	- dbo.customers (c_custkey) and (c_nationkey)
@@ -54,6 +57,9 @@ BEGIN
 	COMMIT TRANSACTION
 END
 GO
+
+/* Check the updated customer records */
+SELECT * FROM dbo.customers WHERE c_custkey = 10;
 
 /*
 	Now we can start the demo with two concurrent transaction

@@ -19,6 +19,9 @@ GO
 USE ERP_Demo;
 GO
 
+EXEC sp_deactivate_query_store;
+GO
+
 /* Check the locking chain for the UPDATE statement */
 BEGIN TRANSACTION update_process_status
 GO
@@ -71,9 +74,6 @@ GO
 	- run the extended event
 	./97 - extended events/02 - read committed locks.sql
 */
-EXEC dbo.sp_deactivate_query_store;
-GO
-
 BEGIN TRANSACTION
 GO
 	UPDATE  /* batch code */

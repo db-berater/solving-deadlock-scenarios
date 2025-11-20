@@ -19,6 +19,7 @@ GO
 USE ERP_Demo;
 GO
 
+EXEC dbo.sp_deactivate_query_store;
 DROP TABLE IF EXISTS dbo.process_status;
 GO
 

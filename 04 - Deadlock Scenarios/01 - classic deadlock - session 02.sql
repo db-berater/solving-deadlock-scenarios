@@ -27,6 +27,9 @@ GO
 USE ERP_Demo;
 GO
 
+EXEC dbo.sp_deactivate_query_store;
+GO
+
 BEGIN TRANSACTION update_nations;
 GO
 	UPDATE	dbo.nations
@@ -67,9 +70,8 @@ GO
 		Now go back to the 01 - classic deadlock - session 01.sql to process
 		the next step
 	*/
-	UPDATE	dbo.customers
-	SET		c_name = 'db Berater GmbH'
-	WHERE	c_custkey = 10
-	OPTION	(MAXDOP 1);
+	SELECT	*
+	FROM	dbo.customers
+	WHERE	c_custkey = 10;
 ROLLBACK TRANSACTION update_nations;
 GO

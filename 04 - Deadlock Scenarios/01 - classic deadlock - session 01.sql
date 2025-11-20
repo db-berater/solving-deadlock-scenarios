@@ -23,6 +23,9 @@ GO
 USE ERP_Demo;
 GO
 
+EXEC dbo.sp_deactivate_query_store;
+GO
+
 /*
 	Before the demonstration implement the extended event to record deadlocks
 	in the ERP_Demo database!
@@ -36,7 +39,7 @@ GO
 BEGIN TRANSACTION update_customers;
 GO
 	UPDATE	dbo.customers
-	SET		c_name = 'Uwe Ricken'
+	SET		c_name = 'Beate Ricken'
 	WHERE	c_custkey = 10
 	OPTION	(MAXDOP 1);
 	GO
@@ -73,9 +76,8 @@ GO
 		NOW open 01 - classic deadlock - session 02.sql
 		Start the transaction and get back to this session!
 	*/
-	UPDATE	dbo.nations
-	SET		n_name = 'Singapore'
-	WHERE	n_nationkey = 2
-	OPTION	(MAXDOP 1);
+	SELECT	*
+	FROM	dbo.nations
+	WHERE	n_nationkey = 2;
 ROLLBACK TRANSACTION update_customers;
 GO

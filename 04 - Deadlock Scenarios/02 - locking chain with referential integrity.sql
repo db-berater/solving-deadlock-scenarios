@@ -25,6 +25,7 @@ GO
 	- dbo.customers
 	- dbo.nations
 */
+EXEC sp_deactivate_query_store;
 EXEC dbo.sp_create_indexes_customers;
 EXEC dbo.sp_create_indexes_nations;
 EXEC dbo.sp_create_foreign_keys

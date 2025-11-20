@@ -19,13 +19,13 @@ GO
 USE ERP_Demo;
 GO
 
-/*
-	Run the extended event script: 01 - read uncommitted locks.sql
-	to implement the extended event which monitors SCH_S locks!
-	Change the session_id variable in the script to this session_id!
+EXEC dbo.sp_deactivate_query_store;
+EXEC dbo.sp_drop_indexes @table_name = N'dbo.customers';
+GO
 
-	-- Copy the following statement in another query window and execute it
-	-- it will cause an X-lock on the page where customer 10 is stored.
+/*
+	Copy the following statement in another query window and execute it
+	it will cause an X-lock on the page where customer 10 is stored.
 
 	USE ERP_Demo;
 	GO
@@ -79,14 +79,15 @@ SELECT	request_session_id,
 		request_status
 FROM	l
 ORDER BY
+		request_session_id,
 		sort_order;
 GO
 
-
-
 /*
 	Let's see what read uncommitted isolation level will do.
-	Before you run the SQL code implement the extended event
+
+	Run the extended event script before executing the next demo!
+	Change the session_id variable in the script to this session_id!
 	./97 - Extended Events/01 - read uncommitted locks.sql
 */
 SELECT	/* batch code */
@@ -131,7 +132,7 @@ SELECT	/* batch code */
 		[c_acctbal],
 		[c_comment]
 FROM	dbo.customers WITH (READUNCOMMITTED)
-WHERE	c_custkey <= 100000
+WHERE	c_custkey <= 1000000
 OPTION	(MAXDOP 1);
 GO
 
@@ -161,7 +162,7 @@ SELECT	[c_custkey],
 		[c_acctbal],
 		[c_comment]
 FROM	dbo.customers
-WHERE	c_custkey <= 10000
+WHERE	c_custkey <= 100000
 OPTION	(MAXDOP 1);
 GO
 

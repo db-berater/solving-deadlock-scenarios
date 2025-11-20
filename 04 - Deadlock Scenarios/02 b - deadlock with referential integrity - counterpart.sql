@@ -40,6 +40,11 @@ GO
 			object_name,
 			sort_order;
 
+	/*
+		Now switch over to the session 02a and execute the
+		second statement!
+	*/
+
 	SELECT	%%lockres%%,
 			n_nationkey,
             n_name,

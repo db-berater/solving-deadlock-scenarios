@@ -22,6 +22,9 @@ GO
 USE ERP_Demo;
 GO
 
+EXEC dbo.sp_deactivate_query_store;
+GO
+
 /*
 	We take exactly the same scenario with a defense option to prevent deadlocks
 */
@@ -44,6 +47,34 @@ GO
 	SELECT	*
 	FROM	dbo.nations WITH (UPDLOCK)
 	WHERE	n_nationkey = 2;
+
+	/* What resources are locked now? */
+	;WITH l
+	AS
+	(
+		SELECT	DISTINCT
+				request_session_id,
+				resource_type,
+				resource_description,
+				request_mode,
+				request_type,
+				request_status,
+				sort_order
+		FROM	dbo.get_locking_status(NULL, DEFAULT)
+		WHERE	resource_description <> N'get_locking_status'
+				AND resource_associated_entity_id > 100
+	)
+	SELECT	request_session_id,
+			resource_type,
+			resource_description,
+			request_mode,
+			request_type,
+			request_status
+	FROM	l
+	ORDER BY
+			request_session_id,
+			sort_order;
+	GO
 
 	UPDATE	dbo.customers
 	SET		c_name = 'Uwe Ricken'
