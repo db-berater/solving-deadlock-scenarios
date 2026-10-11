@@ -188,7 +188,7 @@ END
 GO
 
 SELECT	[rows],
-		COUNT_BIG(*)
+		COUNT_BIG(*)	AS num_results
 FROM	#record_count
 GROUP BY
 		[rows]

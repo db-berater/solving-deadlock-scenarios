@@ -47,8 +47,8 @@ SELECT	[c_custkey],
 		[c_phone],
 		[c_acctbal],
 		[c_comment]
-FROM	dbo.customers
-WHERE	c_custkey = 11;
+FROM		dbo.customers
+WHERE	c_custkey = 10;
 GO
 
 /*
@@ -67,7 +67,7 @@ AS
 			request_type,
 			request_status,
 			sort_order
-	FROM	dbo.get_locking_status(NULL, 1)
+	FROM		dbo.get_locking_status(NULL, 1)
 	WHERE	resource_description <> N'get_locking_status'
 			AND resource_associated_entity_id > 100
 )
@@ -99,8 +99,8 @@ SELECT	/* batch code */
 		[c_phone],
 		[c_acctbal],
 		[c_comment]
-FROM	dbo.customers WITH (NOLOCK)
-WHERE	c_custkey = 11
+FROM		dbo.customers WITH (NOLOCK)
+WHERE	c_custkey = 10
 OPTION	(MAXDOP 1);
 GO
 
@@ -131,7 +131,7 @@ SELECT	/* batch code */
 		[c_phone],
 		[c_acctbal],
 		[c_comment]
-FROM	dbo.customers WITH (READUNCOMMITTED)
+FROM		dbo.customers WITH (READUNCOMMITTED)
 WHERE	c_custkey <= 1000000
 OPTION	(MAXDOP 1);
 GO
@@ -161,7 +161,7 @@ SELECT	[c_custkey],
 		[c_phone],
 		[c_acctbal],
 		[c_comment]
-FROM	dbo.customers
+FROM		dbo.customers
 WHERE	c_custkey <= 100000
 OPTION	(MAXDOP 1);
 GO

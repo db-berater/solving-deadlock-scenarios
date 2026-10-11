@@ -39,7 +39,8 @@ GO
 	WHERE	c_custkey <= 10;
 	GO
 
-	SELECT	request_session_id,
+	SELECT	TOP (20)
+			request_session_id,
 			resource_type,
 			resource_description,
 			rk.c_custkey,

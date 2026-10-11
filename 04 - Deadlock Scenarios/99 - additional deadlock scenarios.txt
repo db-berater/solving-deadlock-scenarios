@@ -1,0 +1,5 @@
+Causes of Deadlocks
+- LACK of Worker Threads (to be continued!)
+- LACK of Execution Memory (to be continued!)
+- Parallel Query Execution (to be continued!)
+- Lock Escalation Deadlock (to be continued!)
